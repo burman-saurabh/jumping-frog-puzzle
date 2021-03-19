@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Frog Jump Puzzles!!</title>
+    <link rel="stylesheet" href="./styles/style.css">
+</head>
+<body align = "center">
+<div class="header">
+<h1>Frog Jump Puzzles!!</h1>
+<h2 style="color: hotpink; padding-top: 0.75em">Rules:</h2>
+<p style="color: yellow">
+    1.  Frog can jump in horizontal/vertical directions only.<br>
+    2.  Frog cannot jump backward.<br>
+    3.  Frog needs to cover all the bricks in the pound.<br>
+</p>
+</div>
+<h3 id="stageId" style="font-weight: 1000; font-size: 2em; color: crimson;" ></h3>
+<div id="tableDivId" align = "center"></div>
+
+<h3 id="winId" class="msg"></h3>
+<input id="nextStageId" class="button" type="button" value="Next Stage" style="visibility: hidden;" onclick="nextStage()"/><br>
+<input id="replayId" class="button" type="button" value="Replay" style="visibility: hidden;"/><br>
+<input id="restartId" class="button" type="button" value="Restart Game" style="visibility: hidden;" onclick="reload()"/><br>
+
+<script>
+
+function reload() {
+    window.location.reload();
+}
+
+let stage = 1;
+
+let brickArray = [[[1,1,0,0,0,0],[0,1,1,1,0,0],[0,1,1,0,1,1],['R',0,0,1,0,0],[1,0,0,0,1,1]],
+[[0,1,1,1],['R',1,0,0],[0,1,1,0],[0,1,1,0]],
+[[0,0,0,'D'],[1,0,1,1],[0,1,1,1],[0,1,1,0]],
+[[0,1,0,0,0,0],[0,1,1,0,1,0],[0,1,1,0,1,1],['L',0,0,0,0,0],[1,0,0,1,0,1]],
+[[0,1,1,0],['R',1,0,0],[0,1,1,1],[0,1,1,0]],
+[[0,0,'D',0,0,0],[0,1,1,0,1,1],[1,1,1,1,1,1],[1,1,0,1,1,0],[0,0,0,1,0,0]],
+[[0,1,0,1,0],['R',1,0,1,1],[0,1,0,0,0],[0,1,0,0,1],[0,0,1,0,1],[0,0,0,1,1]],
+[[0,0,0,1,0,0],[0,0,0,1,1,0],[0,1,1,1,0,0],[0,1,1,0,1,1],['R',1,0,1,0,1],[0,0,0,0,1,1]],
+[[0,1,1,1,0,0,0],[0,1,0,0,1,1,0],['R',1,1,0,0,1,1],[0,1,1,0,1,1,0],[0,1,1,1,0,0,0]],
+[[0,0,1,0,1,0,0],[0,1,0,1,1,0,1],['R',1,0,1,1,0,0],[0,1,1,1,0,1,0],[0,1,0,0,0,0,1]]
+];
+
+// global var to set the face direction in each frog jump
+//It first gets set while table creation and then changes after every jump
+let faceDirection = ''; 
+
+let rightPosArray = null;
+let leftPosArray = null;
+let upPosArray = null;
+let downPosArray = null;
+let allPosArray = new Array();
+let posCount = 0;
+
+
+document.getElementById('replayId').addEventListener('click', function(){
+    createTable(brickArray[stage - 1]);
+    document.getElementById('restartId').style.visibility = "hidden";
+    document.getElementById('replayId').style.visibility = "hidden";  
+})
+
+createTable(brickArray[stage - 1]); //for the first run.
+
+function createTable(array1) {
+    document.getElementById('stageId').innerHTML = `Stage ${stage}`;
+
+    if(document.getElementById('tableDivId').childNodes.length > 0){
+        document.getElementById('tableDivId').removeChild(document.getElementById('tableDivId').childNodes[0]);
+    }
+
+    document.getElementById('winId').innerHTML = ''; //for resetting after first stage
+    
+    var i = 0, rowEl = null,
+    tableEl = document.createElement("table");
+    tableEl.id = 'gridId';
+  
+    for (i = 0; i < array1.length; i++) {
+        rowEl = tableEl.insertRow(); // DOM method for creating table rows
+        for(j = 0; j < array1[i].length; j++){
+            cellEl = rowEl.insertCell();
+            cellEl.id = i+''+j; //setting cell id
+            if(array1[i][j] == 0){
+                cellEl.innerHTML = '<img src="images/blank.png">';
+            }
+            else if(array1[i][j] == 1){
+                cellEl.innerHTML = '<img src="images/brickCell.png">';
+            }
+            else if(array1[i][j] == 'R'){
+                cellEl.innerHTML = '<img src="images/frogRight.png">';
+                //cellEl.addEventListener('click', updateCells);
+                //console.log(cellEl);
+                faceDirection = array1[i][j]; // for the first run we set the faceDirection here itself
+
+            }
+            else if(array1[i][j] == 'L'){
+                cellEl.innerHTML = '<img src="images/frogLeft.png">';
+                //cellEl.addEventListener('click', updateCells);
+                //console.log(cellEl);
+                faceDirection = array1[i][j]; // for the first run we set the faceDirection here itself
+
+            }
+            else if(array1[i][j] == 'U'){
+                cellEl.innerHTML = '<img src="images/frogUp.png">';
+                //cellEl.addEventListener('click', updateCells);
+                //console.log(cellEl);
+                faceDirection = array1[i][j]; // for the first run we set the faceDirection here itself
+
+            }
+            else if(array1[i][j] == 'D'){
+                cellEl.innerHTML = '<img src="images/frogDown.png">';
+                //cellEl.addEventListener('click', updateCells);
+                //console.log(cellEl);
+                faceDirection = array1[i][j]; // for the first run we set the faceDirection here itself
+
+            }
+        }    
+
+        
+  }
+    document.getElementById('tableDivId').appendChild(tableEl);
+    updateCells(); // calling function on page load
+}
+
+
+
+function updateCells(){
+
+    let currentFrogEl;
+    for(i = 0; i < document.getElementById('gridId').rows.length; i++){
+        for(j = 0; j < document.getElementById('gridId').rows[i].cells.length; j++){
+            if(document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogRight.png">'
+                || document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogLeft.png">'
+                || document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogUp.png">'
+                || document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogDown.png">'){
+
+                    currentFrogEl = document.getElementById('gridId').rows[i].cells[j];
+            }
+        }
+    }
+    
+    findAvailableCellPositionsToMove(currentFrogEl);
+    //console.log(rightPosArray);
+    allPosArray.splice(0, allPosArray.length);// clear the array before adding new positions
+    
+    allPosArray.push(rightPosArray);
+    allPosArray.push(leftPosArray);
+    allPosArray.push(upPosArray);
+    allPosArray.push(downPosArray);
+
+    posCount = 0;
+    for(i = 0; i < allPosArray.length; i++){
+        if(allPosArray[i] != null){
+            posCount++;
+            let rowId = Number(allPosArray[i].substr(0,1));
+            let colId = Number(allPosArray[i].substr(1,1));
+
+            document.getElementById('gridId').rows[rowId].cells[colId].addEventListener('click', updateNewFrogCell);
+        }
+    }
+
+    if(posCount == 0){
+        document.getElementById('winId').innerHTML = 'Wrong move!! Game is over';
+        document.getElementById('restartId').style.visibility = "visible";
+        document.getElementById('replayId').style.visibility = "visible";
+    }
+
+}
+
+function updateNewFrogCell(e){
+    let lastFrogEl;
+    for(i = 0; i < document.getElementById('gridId').rows.length; i++){
+        for(j = 0; j < document.getElementById('gridId').rows[i].cells.length; j++){
+            if(document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogRight.png">'
+                || document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogLeft.png">'
+                || document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogUp.png">'
+                || document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/frogDown.png">'){
+                    
+                    lastFrogEl = document.getElementById('gridId').rows[i].cells[j];
+            }
+        }
+    }
+  
+    lastFrogEl.innerHTML = '<img src="images/emptyCell.PNG">'; // and making image blank
+
+    //removing eventlistener for all available pos
+    for(i = 0; i < allPosArray.length; i++){
+        if(allPosArray[i] != null){
+            let rowId = Number(allPosArray[i].substr(0,1));
+            let colId = Number(allPosArray[i].substr(1,1));
+            document.getElementById('gridId').rows[rowId].cells[colId].removeEventListener('click', updateNewFrogCell);
+        }
+    }
+
+    findFaceDirection(lastFrogEl,e); // setting new face direction
+
+    //setting image of the new position
+    if(faceDirection == 'R'){
+        e.path[1].innerHTML = '<img src="images/frogRight.png">';
+    }
+    else if(faceDirection == 'L'){
+        e.path[1].innerHTML = '<img src="images/frogLeft.png">';
+    }
+    else if(faceDirection == 'U'){
+        e.path[1].innerHTML = '<img src="images/frogUp.png">';
+    }
+    else if(faceDirection == 'D'){
+        e.path[1].innerHTML = '<img src="images/frogDown.png">';
+    }
+    
+
+    //again calling update function for the new position of the frog
+    let currentFrogCount = currentAllFrogCount();
+
+    if(currentFrogCount == 0){
+        //document.getElementById('winId').innerHTML = `Congrats!! Stage ${stage} clear`;
+        //window.confirm(`Congrats!! Stage ${stage} clear`);
+        //document.getElementById('restartId').style.visibility = "visible";
+
+        stage++;
+        if(stage == brickArray.length + 1){
+            document.getElementById('winId').innerHTML = 'You Rock!! All stages are clear';
+            document.getElementById('restartId').style.visibility = "visible";
+        }
+        else{
+            //createTable(brickArray[stage - 1]); // creating table for
+            document.getElementById('nextStageId').style.visibility = "visible";
+            document.getElementById('winId').innerHTML = `Congrats!! Stage ${stage - 1} clear`;
+        }    
+    }
+    else if(currentFrogCount > 0){
+        updateCells();
+    }
+}
+
+function nextStage(){
+    createTable(brickArray[stage - 1]); // creating table for next stage
+    document.getElementById('nextStageId').style.visibility = "hidden";
+}
+
+// function stageClear(){
+//     alert(`Congrats!! Stage ${stage} clear`);
+//     if(stage < brickArray.length){
+//         window.confirm(`Proceed to Stage ${stage + 1} now !!`);
+//     }
+// }
+
+function currentAllFrogCount(){ 
+    let count = 0;
+
+    for(i = 0; i < document.getElementById('gridId').rows.length; i++){
+        for(j = 0; j < document.getElementById('gridId').rows[i].cells.length; j++){
+            if(document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/brickCell.png">'){
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+// to set the face direction
+function findFaceDirection(lastFrogEl,e){
+    console.log(e.path);
+    let lastRow = Number(lastFrogEl.id.substr(0,1));
+    let lastCol = Number(lastFrogEl.id.substr(1,1));
+
+    let currentRow = Number(e.path[1].id.substr(0,1));
+    let currentCol = Number(e.path[1].id.substr(1,1));
+
+    if(lastRow == currentRow){
+        if(currentCol > lastCol){
+            faceDirection = 'R';
+        }
+        else if(currentCol < lastCol){
+            faceDirection = 'L';
+        }
+    }
+    else if(lastCol == currentCol){
+        if(currentRow > lastRow){
+            faceDirection = 'D';
+        }
+        else if(currentRow < lastRow){
+            faceDirection = 'U';
+        }
+    }
+
+}
+
+function findAvailableCellPositionsToMove(cellEl){
+
+    //again making these variables null for the subsequent calls
+    rightPosArray = null;
+    leftPosArray = null;
+    upPosArray = null;
+    downPosArray = null;
+
+    let currentFrogRowId = Number(cellEl.id.substr(0,1));
+    let currentFrogColId = Number(cellEl.id.substr(1,1));
+
+    let i = currentFrogRowId;
+
+    for(let j = currentFrogColId + 1; j < document.getElementById('gridId').rows[currentFrogRowId].cells.length; j++){
+        if(document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/brickCell.png">'){
+            if(faceDirection == 'L'){
+                rightPosArray = null;
+                break;
+            }
+            else{
+                rightPosArray = i+''+j;
+                break;
+            }
+        }
+    }
+
+    for(let j = currentFrogColId - 1; j >= 0; j--){
+        if(document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/brickCell.png">'){
+            if(faceDirection == 'R'){
+                leftPosArray = null;
+                break;
+            }
+            else{
+                leftPosArray = i+''+j;
+                break;
+            }
+        }
+    }
+
+    let j = currentFrogColId;
+
+    for(let i = currentFrogRowId - 1; i >= 0; i--){
+        if(document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/brickCell.png">'){
+            if(faceDirection == 'D'){
+                upPosArray = null;
+            }
+            else{
+                upPosArray = i+''+j;
+                break;
+            }
+        }
+    }
+
+    for(let i = currentFrogRowId + 1; i < document.getElementById('gridId').rows.length; i++){
+        if(document.getElementById('gridId').rows[i].cells[j].innerHTML == '<img src="images/brickCell.png">'){
+            if(faceDirection == 'U'){
+                downPosArray = null;
+            }
+            else{
+                downPosArray = i+''+j;
+                break;
+            }
+        }
+    }   
+
+}
+
+//const gridArray = new Array();
+// for(i = 0; i < document.getElementById('gridId').rows.length; i++){
+//     for(j = 0; j < document.getElementById('gridId').rows[i].cells.length; j++){
+//         if(document.getElementById('gridId').rows[i].cells[j].innerHTML != '<img src="images/blank.png">'){
+//             gridArray.push(i+''+j);
+//         }
+//     }
+// }
+
+
+
+
+
+</script>
+
+</body>
+</html>
